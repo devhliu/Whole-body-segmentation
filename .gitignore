@@ -1,0 +1,7 @@
+__pycache__/
+saves/
+tests/
+data_nifti/
+data_csv/
+virt/
+
