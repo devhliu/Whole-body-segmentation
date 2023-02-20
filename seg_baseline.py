@@ -135,4 +135,3 @@ class SegBaseline():
         model.eval()
         _, _, test_loader = self.load_dataloaders()
         count(model, test_loader, dc, hd95)
-
