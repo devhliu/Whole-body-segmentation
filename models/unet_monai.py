@@ -1,9 +1,14 @@
 import os
+import sys
 import torch 
 import pandas as pd
+
+sys.path.insert(0, "C:/Users/danon/Desktop/Whole-body-segmentation")
 from monai.networks.nets import UNet 
 from monai.losses import DiceLoss
 from seg_baseline import SegBaseline
+
+
 
 class UnetMonai():
     """
@@ -16,7 +21,7 @@ class UnetMonai():
         optimizer (str): only 'adam' available for now
         epochs (int): number of epochs to train model 
     """
-    def __init__(self, unet_params: dict, save_path: str, loss_function: str='dice', optimizer: str='adam', epochs: int=200) -> None:
+    def __init__(self, unet_params: dict, save_path: str, loss_function: str='dice', optimizer: str='adam', epochs: int=20) -> None:
         super().__init__()
         self.model = UNet(
             spatial_dims=unet_params['spatial_dims'],       
@@ -35,7 +40,7 @@ class UnetMonai():
         if optimizer=='adam':
             self.optimizer = torch.optim.Adam(self.model.parameters())
 
-    def run_UnetMonai(self, root_path: str) -> None:
+    def run_UnetMonai(self, root_path: str, checkpoint=None) -> None:
         """
         Function starting segmentation training with unet monai model.
 
@@ -43,7 +48,7 @@ class UnetMonai():
             root_path (str): path to directory with csv files.
         """
         segmentation = SegBaseline(root_path)
-        segmentation.training(self.model, self.save_path, self.loss_function, self.optimizer, self.epochs)
+        segmentation.training(self.model, self.save_path, self.loss_function, self.optimizer, self.epochs, 'monai', checkpoint)
 
 if __name__=='__main__':
     root_path = os.path.abspath(os.getcwd())
@@ -53,7 +58,13 @@ if __name__=='__main__':
                     'channels': (16, 32, 64, 128, 256),
                     'strides': (2, 2, 2, 2),
                     'num_res_units': 2}
+    # unet_monai = UnetMonai(unet_params, 'save_path')
+    # unet_monai.run_UnetMonai('C:/Users/danon/Desktop/Whole-body-segmentation')
+
+    path = 'model_path'
+    checkpoint = torch.load(path, map_location=torch.device('cpu'))
+
     unet_monai = UnetMonai(unet_params, 'save_path')
-    unet_monai.run_UnetMonai('root_path')
+    unet_monai.run_UnetMonai(os.getcwd(), checkpoint)
 
 
