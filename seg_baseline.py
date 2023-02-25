@@ -64,6 +64,7 @@ class SegBaseline():
         return train_loader, val_loader, test_loader
 
     def training(self, model, save_path, loss_function, optimizer, epochs, name, checkpoint=None):
+        torch.autograd.set_detect_anomaly(True)
         device = torch.device("cpu")
         model = model.to(device)
 
@@ -105,6 +106,10 @@ class SegBaseline():
 
                 optimizer.step()
                 train_loss += loss.item()
+
+                if torch.isnan(loss) or torch.isinf(loss):
+                    print('Numerical error in loss calculation!')
+                    break
 
             loss_history.append(train_loss / training_size)
                 
