@@ -80,6 +80,8 @@ class SegBaseline():
         best_loss = float("inf")
 
         if checkpoint != None:
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             loss_history = checkpoint['train_loss']
             val_loss_history = checkpoint['val_loss']
             best_loss = checkpoint['best_loss']
@@ -88,6 +90,7 @@ class SegBaseline():
         now = date.today()
         for epoch in range(epochs):
             current_epoch += 1
+            print(f'Current epoch: {current_epoch} for {name}')
             train_loss = 0.0
             val_loss = 0.0
 
@@ -126,7 +129,8 @@ class SegBaseline():
 
             val_loss_history.append(val_loss / val_size)
 
-            if (epoch+1)%4==0:
+            if (epoch+1)%3==0:
+                print('Train Loss', train_loss / training_size)
                 print('Val Loss', val_loss / val_size)
                 # model.eval()
                 # with torch.no_grad():
@@ -155,7 +159,6 @@ class SegBaseline():
                     'val_loss': val_loss_history,
                     }, os.path.join(save_path, f'{name}-{now}-best.pt'))
 
-        
         torch.save({
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
