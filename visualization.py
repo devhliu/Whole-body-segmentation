@@ -1,6 +1,7 @@
 import torch
 import matplotlib.pyplot as plt
 from seg_baseline import SegBaseline
+from monai.networks.layers.factories import Norm
 
 class Visualization():
     def __init__(self, root_path, model=None, model_path=None, loader='train', axis='axial'):
@@ -20,28 +21,30 @@ class Visualization():
 
         checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
         model.load_state_dict(checkpoint['model_state_dict'])
-        self.output = model(self.image)
+        
+        output = model(self.image)
+        self.output = torch.sigmoid(output)
 
     def show_CT(self, slice):
-        plt.imshow(self.image[:,0,:,:,:].squeeze(0).squeeze(0).detach().numpy()[slice,:, :], cmap='gray')
+        plt.imshow(self.image[:,0,:,:,:].squeeze(0).squeeze(0).detach().numpy()[slice, :, :], cmap='gray')
         plt.axis('off')
         plt.title('CT')
 
     def show_PET(self, slice):
-        plt.imshow(self.image[:,1,:,:,:].squeeze(0).squeeze(0).detach().numpy()[slice,:, :], cmap='gray')
+        plt.imshow(self.image[:,1,:,:,:].squeeze(0).squeeze(0).detach().numpy()[slice, :, :], cmap='gray')
         plt.axis('off')
         plt.title('PET')
 
     def show_mask(self, slice):
-        plt.imshow(self.label.squeeze(0).squeeze(0).detach().numpy()[slice,:, :], cmap='gray')
+        plt.imshow(self.label.squeeze(0).squeeze(0).detach().numpy()[slice, :, :], cmap='gray')
         plt.axis('off')
         plt.title('Mask')
     
     def show_output(self, slice):
         self.output[self.output > 0.5] = 1
-        self.output[self.output <= 0] = 0
+        self.output[self.output <= 0.5] = 0
 
-        plt.imshow(self.output.squeeze(0).squeeze(0).detach().numpy()[slice,:, :], cmap='gray')
+        plt.imshow(self.output.squeeze(0).squeeze(0).detach().numpy()[slice, :, :], cmap='gray')
         plt.axis('off')
         plt.title('Output')
 
